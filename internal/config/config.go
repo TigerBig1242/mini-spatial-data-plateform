@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -13,38 +12,23 @@ type Config struct {
 	DB_Port     string
 	DB_User     string
 	DB_Password string
-	Uri         string
+	DB_Name     string
 }
 
 // func LoadConfig() string {
 func LoadConfig() *Config {
-	errEnv := godotenv.Load()
-	if errEnv != nil {
-		fmt.Println("Error loading .env file")
-		// panic("Error loading .env file")
-		return nil
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "dev"
 	}
-	fmt.Println("Load URI :", errEnv)
-
-	uri := os.Getenv("MONGODB_URI")
-	fmt.Println("MONGODB_URI :", uri)
-
-	if uri == "" {
-		log.Fatal("MongoDB URI is empty")
-	}
-
-	// errEnv := godotenv.Load()
-	// if errEnv != nil {
-	// 	panic("Error loading .env file")
-	// }
-	// fmt.Println("Load URI :", errEnv)
+	godotenv.Load(".env." + env)
 
 	config := &Config{
 		DB_Host:     os.Getenv("DB_HOST"),
 		DB_Port:     os.Getenv("DB_PORT"),
 		DB_User:     os.Getenv("DB_USER"),
 		DB_Password: os.Getenv("DB_PASSWORD"),
-		Uri:         os.Getenv("MONGODB_URI"),
+		DB_Name:     os.Getenv("DB_NAME"),
 	}
 
 	if config.DB_Host == "" {

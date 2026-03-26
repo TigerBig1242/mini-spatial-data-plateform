@@ -1,35 +1,35 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"time"
+
+	"github.com/gofiber/fiber/v3"
 
 	"github.com/tigerbig/spatial-data-plateform/internal/config"
+	"github.com/tigerbig/spatial-data-plateform/internal/domain/entities"
 	"github.com/tigerbig/spatial-data-plateform/internal/infrastructure/database"
 )
 
 func main() {
 	databaseConfig := config.LoadConfig()
 
-	client, err := database.ConnectDatabase(databaseConfig)
+	db, err := database.ConnectDatabase(databaseConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db := client.Database("spatial-data")
-
-	migrateErr := database.Migrate(db)
-	if migrateErr != nil {
-		panic(migrateErr)
+	err = db.AutoMigrate(&entities.Test{}, &entities.SpatialFeature{})
+	if err != nil {
+		log.Fatalf("Database Migration failed: %v", err)
 	}
-	fmt.Println("🚀 APP START", time.Now().UnixNano())
 
-	// defer func() {
-	// 	err := client.Disconnect(db)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }()
+	app := fiber.New()
 
+	app.Get("/hello", func(c fiber.Ctx) error {
+		if err != nil {
+			return c.Status(500).SendString("Internal server error")
+		}
+		return c.SendString("Hello World at main.go")
+	})
+	app.Listen(":8085")
 }

@@ -1,20 +1,34 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongodb/mongodb-atlas-local
-    hostname: mongodb
+  postgres: 
+      image: postgis/postgis:16-3.4
+      platform: linux/amd64
+      container_name: postgres
+      environment:
+        POSTGRES_DB: ${DB_NAME}
+        POSTGRES_USER: ${DB_USER}
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      ports:
+        - "5432:5432"
+      restart: always
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
     environment:
-      - MONGODB_INITDB_ROOT_USERNAME=${USER_NAME}
-      - MONGODB_INITDB_ROOT_PASSWORD=${UER_PASSWORD}
-    ports:
-      - 27017:27017
+      PGADMIN_DEFAULT_EMAIL: ${USER_NAME}
+      PGADMIN_DEFAULT_PASSWORD: ${USER_PASSWORD}
+    ports: 
+      - "5055:80"
+    depends_on:
+      - postgres
     volumes:
-      - ./init:/docker-entrypoint-initdb.d
-      - db:/data/db
-      - configdb:/data/configdb
-      - mongot:/data/mongot
+      - pgadmin_data:/var/lib/pgadmin
+    restart: always
+
 volumes:
-  db:
-  configdb:
-  mongot:
+  postgres_data:
+  pgadmin_data:
